@@ -218,6 +218,10 @@ jobs:
         # Run the make test
         make test
 
+    - name: Keycloak logs
+      if: always()
+      run: kubectl logs --namespace keycloak svc/keycloak -c keycloak --tail 500
+
     - name: Delete the Kubernetes cluster
       if: always()
       run: kind delete cluster
