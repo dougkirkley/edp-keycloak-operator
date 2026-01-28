@@ -24,6 +24,8 @@ func (a GoCloakAdapter) SyncServiceAccountGroups(realm, clientID string, groups 
 		return fmt.Errorf("unable to get client service account: %w", err)
 	}
 
+	a.log.Info("Syncing service account groups", "clientID", clientID, "groups", groups)
+
 	return a.SyncUserGroups(context.Background(), realm, *user.ID, groups, addOnly)
 }
 

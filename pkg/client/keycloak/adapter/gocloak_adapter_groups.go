@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/Nerzal/gocloak/v12"
-	"golang.org/x/sync/errgroup"
 
 	keycloakApi "github.com/epam/edp-keycloak-operator/api/v1"
 )
@@ -43,7 +41,35 @@ func (a GoCloakAdapter) GetGroups(ctx context.Context, realm string) (map[string
 	return groupMap, nil
 }
 
+// GetGroupByPath return group by path
+func (a GoCloakAdapter) GetGroupByPath(ctx context.Context, realm, path string) (*gocloak.Group, error) {
+	var group *gocloak.Group
+
+	rsp, err := a.startRestyRequest().
+		SetContext(ctx).
+		SetPathParams(map[string]string{
+			keycloakApiParamRealm: realm,
+			"path":                path,
+		}).
+		SetBody(group).
+		Post(a.buildPath(getGroupByPath))
+
+	if err = a.checkError(err, rsp); err != nil {
+		return nil, fmt.Errorf("unable to get group by path: %s: %w", path, err)
+	}
+
+	return group, nil
+}
+
 func (a GoCloakAdapter) getGroup(ctx context.Context, realm, groupName string) (*gocloak.Group, error) {
+	if strings.HasPrefix(groupName, "/") {
+		group, groupErr := a.client.GetGroupByPath(ctx, a.token.AccessToken, realm, groupName)
+		if groupErr != nil {
+			return nil, fmt.Errorf("unable to get group by path: %w", groupErr)
+		}
+		return group, nil
+	}
+
 	groups, err := a.client.GetGroups(ctx, a.token.AccessToken, realm, gocloak.GetGroupsParams{
 		Search: gocloak.StringP(groupName),
 	})
@@ -73,27 +99,14 @@ func (a GoCloakAdapter) getGroupsByNames(
 	groupNames []string,
 ) (map[string]gocloak.Group, error) {
 	groups := make(map[string]gocloak.Group, len(groupNames))
-	eg := errgroup.Group{}
-	m := sync.Mutex{}
 
 	for _, groupName := range groupNames {
-		eg.Go(func() error {
-			group, err := a.getGroup(ctx, realm, groupName)
-			if err != nil {
-				return err
-			}
+		group, err := a.getGroup(ctx, realm, groupName)
+		if err != nil {
+			return nil, err
+		}
 
-			m.Lock()
-			defer m.Unlock()
-
-			groups[groupName] = *group
-
-			return nil
-		})
-	}
-
-	if err := eg.Wait(); err != nil {
-		return nil, fmt.Errorf("failed to get groups by names: %w", err)
+		groups[groupName] = *group
 	}
 
 	return groups, nil

@@ -72,6 +72,7 @@ const (
 	realmUsersProfile               = "/admin/realms/{realm}/users/profile"
 	getChildGroups                  = "/admin/realms/{realm}/groups/{groupID}/children"
 	getGroup                        = "/admin/realms/{realm}/groups/{groupID}"
+	getGroupByPath                  = "/admin/realms/{realm}/group-by-path/{path}"
 	clientManagementPermissions     = "/admin/realms/{realm}/clients/{id}/management/permissions"
 	serverInfo                      = "/admin/serverinfo"
 	logClientDTO                    = "client dto"

@@ -165,6 +165,7 @@ type GoCloakGroups interface {
 	UpdateGroup(ctx context.Context, accessToken, realm string, updatedGroup gocloak.Group) error
 	DeleteGroup(ctx context.Context, accessToken, realm, groupID string) error
 	GetGroups(ctx context.Context, accessToken, realm string, params gocloak.GetGroupsParams) ([]*gocloak.Group, error)
+	GetGroupByPath(ctx context.Context, accessToken, realm, path string) (*gocloak.Group, error)
 	GetRoleMappingByGroupID(ctx context.Context, accessToken, realm,
 		groupID string) (*gocloak.MappingsRepresentation, error)
 }
