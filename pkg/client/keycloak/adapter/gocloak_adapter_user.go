@@ -40,6 +40,7 @@ type UserRealmRoleMapping struct {
 type UserGroupMapping struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 func (a GoCloakAdapter) CreateOrUpdateUser(
@@ -166,7 +167,7 @@ func (a GoCloakAdapter) SyncUserGroups(
 
 	if !addOnly {
 		for _, gr := range userGroups {
-			if !slices.Contains(groups, gr.Name) {
+			if !slices.Contains(groups, gr.Path) {
 				a.log.Info("Removing user from group", "group", gr.Name, "user", userID)
 				if err = a.RemoveUserFromGroup(ctx, realmName, userID, gr.ID); err != nil {
 					return fmt.Errorf("unable to remove user from group: %w", err)
