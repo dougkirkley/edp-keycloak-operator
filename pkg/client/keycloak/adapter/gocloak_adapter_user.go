@@ -141,8 +141,6 @@ func (a GoCloakAdapter) SyncUserGroups(
 		}
 	}
 
-	a.log.Info("groups to add", "groups", groupsToAdd, "user", userID)
-
 	if len(groupsToAdd) > 0 {
 		var kcGroups map[string]gocloak.Group
 
@@ -158,7 +156,6 @@ func (a GoCloakAdapter) SyncUserGroups(
 		a.log.Info("groups by name", "groups", kcGroups, "user", userID)
 
 		for _, gr := range kcGroups {
-			a.log.Info("Adding user to group", "groupID", gr.ID, "user", userID)
 			if err = a.AddUserToGroup(ctx, realmName, userID, *gr.ID); err != nil {
 				return fmt.Errorf("failed to add user to group %v: %w", gr.Name, err)
 			}
@@ -168,7 +165,6 @@ func (a GoCloakAdapter) SyncUserGroups(
 	if !addOnly {
 		for _, gr := range userGroups {
 			if !slices.Contains(groups, gr.Path) {
-				a.log.Info("Removing user from group", "group", gr.Name, "user", userID)
 				if err = a.RemoveUserFromGroup(ctx, realmName, userID, gr.ID); err != nil {
 					return fmt.Errorf("unable to remove user from group: %w", err)
 				}
